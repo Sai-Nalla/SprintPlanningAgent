@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprint Planning Agent | Sai</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .port-selector {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .port-selector label {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .port-selector select {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .sidebar h2 {
+            color: #2d3748;
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #22c55e;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: transform 0.2s;
+            text-align: left;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .backlog-section {
+            margin-top: 25px;
+        }
+
+        .backlog-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .chat-area {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-content {
+            display: inline-block;
+            padding: 15px 20px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.agent .message-content {
+            background: white;
+            color: #2d3748;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #a0aec0;
+            margin-top: 5px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #userInput:focus {
+            border-color: #667eea;
+        }
+
+        #sendBtn {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        #sendBtn:hover {
+            transform: scale(1.05);
+        }
+
+        #sendBtn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .story-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .story-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .story-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 11px;
+            color: #718096;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .priority-high {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .priority-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .priority-low {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .setup-banner {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .setup-banner button {
+            background: #fbbf24;
+            color: #78350f;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .error-banner {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #991b1b;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                order: 2;
+            }
+
+            .chat-area {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Sprint Planning Agent</h1>
+        <p>AI-powered sprint planning using ReAct pattern with Spring AI</p>
+    </div>
+
+    <div class="port-selector">
+        <label for="portSelect">Backend Port:</label>
+        <select id="portSelect" onchange="updatePort()">
+            <option value="8080">8080 (default)</option>
+            <option value="8081" selected>8081 (Module 8 pattern)</option>
+            <option value="8082">8082</option>
+            <option value="9090">9090</option>
+        </select>
+        <span style="margin-left: 10px; font-size: 14px; color: #666;" id="currentApi"></span>
+    </div>
+
+    <div id="errorBanner" class="error-banner" style="display: none;"></div>
+
+    <div id="setupBanner" class="setup-banner" style="display: none;">
+        <strong>Database seems empty</strong>
+        <p style="margin: 10px 0; font-size: 14px;">Sample data should load automatically on startup. If you cleared the database, reload it:</p>
+        <button onclick="reloadSampleStories()">Reload Sample Stories</button>
+    </div>
+
+    <div class="main-content">
+        <div class="sidebar">
+            <h2>Quick Actions</h2>
+            <div class="quick-actions">
+                <button class="action-btn" onclick="askAgent('Plan the next sprint based on our team velocity')">
+                    Plan Next Sprint
+                </button>
+                <button class="action-btn" onclick="askAgent('What is our team velocity for the last 2 sprints?')">
+                    Check Team Velocity
+                </button>
+                <button class="action-btn" onclick="askAgent('Show high priority stories that should be done first')">
+                    High Priority Stories
+                </button>
+                <button class="action-btn" onclick="askAgent('Check for dependencies in backlog stories')">
+                    Check Dependencies
+                </button>
+                <button class="action-btn" onclick="askAgent('Find similar stories to User Login')">
+                    Find Similar Stories
+                </button>
+            </div>
+
+            <div class="backlog-section">
+                <h2>Backlog Overview</h2>
+                <div class="backlog-stats">
+                    <div class="stat-card">
+                        <div class="number" id="totalStories">-</div>
+                        <div class="label">Total Stories</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="totalPoints">-</div>
+                        <div class="label">Total Points</div>
+                    </div>
+                </div>
+                <div id="backlogList"></div>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="messages" id="messages">
+                <div class="message agent">
+                    <div class="message-content">
+                        <strong>Hello! I'm your Sprint Planning Agent.</strong><br><br>
+                        I can help you with:<br>
+                        - Planning your next sprint<br>
+                        - Calculating team velocity<br>
+                        - Identifying dependencies<br>
+                        - Finding similar stories<br>
+                        - Recommending stories based on capacity<br><br>
+                        Try asking: "Plan next sprint" or click a quick action button!
+                    </div>
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px; color: #718096;">Agent is thinking...</p>
+            </div>
+
+            <div class="input-area">
+                <input
+                        type="text"
+                        id="userInput"
+                        placeholder="Ask about sprint planning, velocity, or dependencies..."
+                        onkeypress="handleKeyPress(event)"
+                >
+                <button id="sendBtn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let API_BASE = 'http://localhost:8081/api/sprint';
+
+    function updatePort() {
+        const port = document.getElementById('portSelect').value;
+        API_BASE = `http://localhost:${port}/api/sprint`;
+        document.getElementById('currentApi').textContent = `Using: ${API_BASE}`;
+        document.getElementById('errorBanner').style.display = 'none';
+        loadBacklog();
+    }
+
+    function showError(message) {
+        const errorBanner = document.getElementById('errorBanner');
+        errorBanner.textContent = message;
+        errorBanner.style.display = 'block';
+    }
+
+    function hideError() {
+        document.getElementById('errorBanner').style.display = 'none';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        updatePort();
+        loadBacklog();
+    });
+
+    async function loadBacklog() {
+        try {
+            hideError();
+            const response = await fetch(`${API_BASE}/backlog`);
+
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}`);
+            }
+
+            const stories = await response.json();
+
+            if (stories.length === 0) {
+                document.getElementById('setupBanner').style.display = 'block';
+                document.getElementById('totalStories').textContent = '0';
+                document.getElementById('totalPoints').textContent = '0';
+                return;
+            }
+
+            document.getElementById('setupBanner').style.display = 'none';
+
+            // Update stats
+            document.getElementById('totalStories').textContent = stories.length;
+            const totalPoints = stories.reduce((sum, s) => sum + (s.storyPoints || 0), 0);
+            document.getElementById('totalPoints').textContent = totalPoints;
+
+            // Display stories - handle missing priority gracefully
+            const backlogList = document.getElementById('backlogList');
+            backlogList.innerHTML = stories.slice(0, 5).map(story => {
+                const priority = (story.priority || 'MEDIUM').toLowerCase();
+                return `
+                <div class="story-card">
+                    <div class="story-title">${story.title || 'Untitled'}</div>
+                    <div class="story-meta">
+                        <span class="priority-badge priority-${priority}">
+                            ${story.priority || 'MEDIUM'}
+                        </span>
+                        <span>${story.storyPoints || '?'} pts</span>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            if (stories.length > 5) {
+                backlogList.innerHTML += `<p style="text-align: center; color: #718096; font-size: 12px; margin-top: 10px;">+${stories.length - 5} more stories</p>`;
+            }
+        } catch (error) {
+            console.error('Error loading backlog:', error);
+            showError(`Failed to connect to backend at ${API_BASE}. Make sure your Spring Boot app is running. Error: ${error.message}`);
+            document.getElementById('setupBanner').style.display = 'block';
+            document.getElementById('totalStories').textContent = '?';
+            document.getElementById('totalPoints').textContent = '?';
+        }
+    }
+
+    async function reloadSampleStories() {
+        try {
+            hideError();
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Loading...';
+
+            const response = await fetch(`${API_BASE}/stories/reload`, {
+                method: 'POST'
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}`);
+            }
+
+            const result = await response.json();
+            await loadBacklog();
+
+            addMessage('agent', `Sample data reloaded successfully!\n\nLoaded ${result.newCount} stories (${result.backlogCount} in backlog). You can now start planning!`);
+
+            btn.disabled = false;
+            btn.textContent = 'Reload Sample Stories';
+        } catch (error) {
+            console.error('Error reloading stories:', error);
+            showError(`Failed to reload stories. Error: ${error.message}`);
+            addMessage('agent', `Error reloading stories: ${error.message}`);
+
+            const btn = event.target;
+            btn.disabled = false;
+            btn.textContent = 'Reload Sample Stories';
+        }
+    }
+
+    function askAgent(query) {
+        document.getElementById('userInput').value = query;
+        sendMessage();
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('userInput');
+        const message = input.value.trim();
+
+        if (!message) return;
+
+        addMessage('user', message);
+        input.value = '';
+
+        document.getElementById('sendBtn').disabled = true;
+        input.disabled = true;
+        document.getElementById('loading').classList.add('active');
+        hideError();
+
+        try {
+            const response = await fetch(`${API_BASE}/plan`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userQuery: message
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}`);
+            }
+
+            const data = await response.json();
+            addMessage('agent', data.response);
+            await loadBacklog();
+
+        } catch (error) {
+            console.error('Error:', error);
+            showError(`Could not connect to agent at ${API_BASE}. Check console for details.`);
+            addMessage('agent', `Error: Could not connect to the agent. Make sure the backend is running on the selected port.\n\nDetails: ${error.message}`);
+        } finally {
+            document.getElementById('sendBtn').disabled = false;
+            input.disabled = false;
+            document.getElementById('loading').classList.remove('active');
+        }
+    }
+
+    function addMessage(sender, text) {
+        const messagesDiv = document.getElementById('messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+        messageDiv.innerHTML = `
+            <div class="message-content">${formatMessage(text)}</div>
+            <div class="message-time">${timeStr}</div>
+        `;
+
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function formatMessage(text) {
+        text = text.replace(/\n/g, '<br>');
+        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        text = text.replace(/^- (.+)$/gm, '&bull; $1');
+        return text;
+    }
+</script>
+</body>
+</html>
