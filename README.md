@@ -1,8 +1,8 @@
-# Sprint Planning Agent - Module 8 Standalone
+# Sprint Planning Agent 
 
 This project contains files for the Sprint Planning Agent, with PostgreSQL + pgvector and Docker support preserved for RAG/vector-search compatibility.
 
-## Included Module 8 files
+## Included files
 
 - `SprintPlanningController.java`
 - `SprintPlanningService.java`
